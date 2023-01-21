@@ -114,7 +114,7 @@ function Import-CsvToSqlTable {
     }
 
 Import-CsvToSqlTable -InstanceName localhost -Database NLNGProjects `
-    -SourceFile D:\NYCDemographics.csv -TableName NYCDemographics -SqlDataType FLOAT
+    -SourceFile D:\Code\ELT_Development\NYCDemographics.csv -TableName NYCDemographics -SqlDataType FLOAT
 
 
 
