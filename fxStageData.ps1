@@ -1,9 +1,9 @@
 Param(
-    [string]$InstanceName = 'localhost'
-    ,[string]$Database = 'NLNGProjects'
-    ,[string]$SourceFile = '.\20230109-111923-8266970-requests-1.csv'
-    ,[string]$SqlDataType = 'VARCHAR(MAX)'
-    ,[string]$TableName = 'Requests'
+    [string]$InstanceName
+    ,[string]$Database
+    ,[string]$SourceFile 
+    ,[string]$SqlDataType
+    ,[string]$TableName
 )
 # =========================================
 
@@ -68,7 +68,7 @@ function Import-CsvToSqlTable {
         $tempsql = BuildSQL -sql $tempsql -CleanHeader $CleanHeader -SqlDataType $SqlDataType -TableName $StagingTableName
 
         # Build create table statement if integration table does not exist
-        $IntegrationTableName = "prod_{0}" -f $TableName
+        $IntegrationTableName = $TableName
         $prodsql = @("IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name  = '$IntegrationTableName')")
         $prodsql = BuildSQL -sql $prodsql -CleanHeader $CleanHeader -SqlDataType $SqlDataType -TableName $IntegrationTableName
         
@@ -97,23 +97,16 @@ function Import-CsvToSqlTable {
             }
             $output = New-Object PSObject -Property @{'Instance'=$InstanceName;'Database'=$Database;'Table'="$StagingTableName";'RowCount'=$rowcount.RowCount}
 
-            # Start background job to integrate staged data with production data (incrementally)
-            Start-Job -ScriptBlock { param($InstanceName, $Database, $TableName, $PrimaryKey)
-                & ".\fxIntegrateStagedData.ps1" -InstanceName $InstanceName -Database $Database -TableName $TableName -PrimaryKey $PrimaryKey
-                } -ArgumentList $InstanceName, $Database, $TableName, $($CleanHeader[0])
-
             Write-Output "Loading source data into the staging area" >> ProgramLog.log
             return $output >> ProgramLog.log
-        
+            
         }
         catch{
             Write-Error $Error[0] -ErrorAction Stop
         }
     }
 
-Import-CsvToSqlTable -InstanceName $InstanceName -Database $Database -SourceFile $SourceFile `
-    -TableName $TableName -SqlDataType $SqlDataType # -Verbose
-
+Import-CsvToSqlTable -InstanceName $InstanceName -Database $Database -SourceFile $SourceFile -TableName $TableName -SqlDataType $SqlDataType # -Verbose
 
 
 

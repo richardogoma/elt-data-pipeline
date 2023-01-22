@@ -35,7 +35,7 @@ function IntegrateData {
         } else {
             $rowcount = Invoke-Sqlcmd @Params
         }
-        $output = New-Object PSObject -Property @{'Instance'=$InstanceName;'Database'=$Database;'Table'="[dbo].[prod_$TableName]";'NewRowsCount'=$rowcount.NewRowsCount}
+        $output = New-Object PSObject -Property @{'Instance'=$InstanceName;'Database'=$Database;'Table'="[dbo].[$TableName]";'NewRowsCount'=$rowcount.NewRowsCount}
         
         Write-Output "Loading new data into the integration table" >> ProgramLog.log
         return $output >> ProgramLog.log
