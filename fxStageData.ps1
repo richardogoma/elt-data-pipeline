@@ -1,3 +1,12 @@
+Param(
+    [string]$InstanceName = 'localhost'
+    ,[string]$Database = 'NLNGProjects'
+    ,[string]$SourceFile = '.\20230109-111923-8266970-requests-1.csv'
+    ,[string]$SqlDataType = 'VARCHAR(MAX)'
+    ,[string]$TableName = 'Requests'
+)
+# =========================================
+
 function Import-CsvToSqlTable {
     [CmdletBinding()]
     param([string]$InstanceName
@@ -9,7 +18,7 @@ function Import-CsvToSqlTable {
           ,[Switch]$Append
           )
     
-        #Check file existince. Should be a perfmon csv
+        #Check file existence. Should be a perfmon csv
         if(-not (Test-Path $SourceFile) -and $SourceFile -notlike '*.csv'){
             Write-Error "Invalid file: $SourceFile"
         }
@@ -89,20 +98,9 @@ function Import-CsvToSqlTable {
             $output = New-Object PSObject -Property @{'Instance'=$InstanceName;'Database'=$Database;'Table'="$StagingTableName";'RowCount'=$rowcount.RowCount}
 
             # Start background job to integrate staged data with production data (incrementally)
-            <#$job = #> Start-Job -ScriptBlock { param($InstanceName, $Database, $TableName)
-                & ".\fxIntegrateStagedData.ps1" -InstanceName $InstanceName -Database $Database -TableName $TableName
-                } -ArgumentList $InstanceName, $Database, $TableName
-            
-            # # Wait for the job to complete
-            # Wait-Job -Job $job
-
-            # # Get the results of the job
-            # $resp = Receive-Job -Job $job
-
-            # # Remove the job from the session
-            # Remove-Job -Job $job
-
-            # $resp
+            Start-Job -ScriptBlock { param($InstanceName, $Database, $TableName, $PrimaryKey)
+                & ".\fxIntegrateStagedData.ps1" -InstanceName $InstanceName -Database $Database -TableName $TableName -PrimaryKey $PrimaryKey
+                } -ArgumentList $InstanceName, $Database, $TableName, $($CleanHeader[0])
 
             Write-Output "Loading source data into the staging area" >> ProgramLog.log
             return $output >> ProgramLog.log
@@ -113,8 +111,8 @@ function Import-CsvToSqlTable {
         }
     }
 
-Import-CsvToSqlTable -InstanceName localhost -Database NLNGProjects `
-    -SourceFile D:\Code\ELT_Development\NYCDemographics.csv -TableName NYCDemographics -SqlDataType FLOAT
+Import-CsvToSqlTable -InstanceName $InstanceName -Database $Database -SourceFile $SourceFile `
+    -TableName $TableName -SqlDataType $SqlDataType # -Verbose
 
 
 

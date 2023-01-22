@@ -3,7 +3,9 @@ Param(
     ,[string]$Database
     ,[pscredential]$SqlCred
     ,[string]$TableName
+    ,[string]$PrimaryKey
 )
+# =========================================
 
 function IntegrateData {
     [CmdletBinding()]
@@ -12,19 +14,36 @@ function IntegrateData {
           ,[string]$Database
           ,[pscredential]$SqlCred
           ,[string]$TableName
+          ,[string]$PrimaryKey
           )
 
-    $DBParam = "TableName=" + $TableName
+    $FileVariables=@(
+        "TableName=$TableName",
+        "PrimaryKey=$PrimaryKey"
+    )
 
-    if($SqlCred){
-        $rowcount = Invoke-Sqlcmd -ServerInstance $InstanceName -Database $Database -InputFile ".\DML-IntegrationTbl.sql" -Variable $DBParam -Username $SqlCred.UserName -Password $SqlCred.GetNetworkCredential().Password
-    } else {
-        $rowcount = Invoke-Sqlcmd -ServerInstance $InstanceName -Database $Database -InputFile ".\DML-IntegrationTbl.sql" -Variable $DBParam
+    $Params=@{
+        ServerInstance=$InstanceName
+        Database=$Database
+        InputFile=".\DML-IntegrationTbl.sql"
+        Variable=$FileVariables
     }
-    $output = New-Object PSObject -Property @{'Instance'=$InstanceName;'Database'=$Database;'Table'="[dbo].[prod_$TableName]";'NewRowsCount'=$rowcount.NewRowsCount}
+
+    try {
+        if($SqlCred){
+            $rowcount = Invoke-Sqlcmd @Params -Username $SqlCred.UserName -Password $SqlCred.GetNetworkCredential().Password
+        } else {
+            $rowcount = Invoke-Sqlcmd @Params
+        }
+        $output = New-Object PSObject -Property @{'Instance'=$InstanceName;'Database'=$Database;'Table'="[dbo].[prod_$TableName]";'NewRowsCount'=$rowcount.NewRowsCount}
+        
+        Write-Output "Loading new data into the integration table" >> ProgramLog.log
+        return $output >> ProgramLog.log
+    }
+    catch {
+        Write-Error $Error[0] -ErrorAction Stop
+    }
     
-    Write-Output "Loading new data into the integration table" >> ProgramLog.log
-    return $output >> ProgramLog.log
 }
 
-IntegrateData -InstanceName $InstanceName -Database $Database -TableName $TableName
+IntegrateData -InstanceName $InstanceName -Database $Database -TableName $TableName -PrimaryKey $PrimaryKey
