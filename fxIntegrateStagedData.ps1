@@ -41,7 +41,7 @@ function IntegrateData {
         return $output >> ProgramLog.log
     }
     catch {
-        Write-Error $Error[0] -ErrorAction Stop
+        throw $Error[0]; $Error.Clear()
     }
     
 }
