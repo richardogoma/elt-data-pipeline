@@ -8,7 +8,7 @@ Param(
 
 # ==========================
 Set-Variable -Name 'PrimaryKey' -Value 'ID'
-Set-Location -Path 'D:\NLNG\Work\webapis\4Me_Batch_Program\ELT_development'
+# Set-Location -Path 'D:\NLNG\Work\webapis\4Me_Batch_Program\ELT_development'
 
 try {
     # Start background job to load data into the staging area
