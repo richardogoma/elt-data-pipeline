@@ -1,57 +1,39 @@
 Param(
     [string]$InstanceName = 'localhost'
     ,[string]$Database = 'NLNGProjects'
-    ,[string]$SourceFile = '.\20230109-111923-8266970-requests-1.csv'
+    ,[string]$SourceFile = '.\20230123-115724-8304473-requests-1.csv'
     ,[string]$SqlDataType = 'VARCHAR(MAX)'
     ,[string]$TableName = 'tblNLNGITRequests'
 )
 
 # ==========================
 Set-Variable -Name 'PrimaryKey' -Value 'ID'
+# Set-Location -Path 'D:\NLNG\Work\webapis\4Me_Batch_Program\ELT_development'
 
 try {
     # Start background job to load data into the staging area
     $job = Start-Job -ScriptBlock { param($InstanceName, $Database, $SourceFile, $SqlDataType, $TableName)
-        & ".\fxStageData.ps1" -InstanceName $InstanceName -Database $Database -SourceFile $SourceFile -SqlDataType $SqlDataType -TableName $TableName
+            & ".\fxStageData.ps1" -InstanceName $InstanceName -Database $Database -SourceFile $SourceFile -SqlDataType $SqlDataType -TableName $TableName
         } -ArgumentList $InstanceName, $Database, $SourceFile, $SqlDataType, $TableName
-    
-        # Wait for the job to complete
-        Wait-Job -Job $job
+
+        # Get the results of the job
+        Receive-Job -Job $job -Wait -AutoRemoveJob -ErrorAction Stop
 
         if($job.State -eq "Completed") {
 
+            Write-Output "Source data staging complete >>> integrating data ..."
             # Start background job to integrate staged data with production data (incrementally)
-            Start-Job -ScriptBlock { param($InstanceName, $Database, $TableName, $PrimaryKey)
-                & ".\fxIntegrateStagedData.ps1" -InstanceName $InstanceName -Database $Database -TableName $TableName -PrimaryKey $PrimaryKey
+            $childjob = Start-Job -ScriptBlock { param($InstanceName, $Database, $TableName, $PrimaryKey)
+                    & ".\fxIntegrateStagedData.ps1" -InstanceName $InstanceName -Database $Database -TableName $TableName -PrimaryKey $PrimaryKey
                 } -ArgumentList $InstanceName, $Database, $TableName, $PrimaryKey
-            }
+            
+            # Get the results of the job
+            Receive-Job -Job $childjob -Wait -AutoRemoveJob -ErrorAction Stop
+            
+            Write-Output "Data integration complete. See program log."
+
+        }
 }
 catch {
-    Write-Error $Error[0] -ErrorAction Stop
+    throw $Error[0]; $Error.Clear()
 }
-
-# =========================================
-
-<#
-    # Get the status of all jobs in the current session
-    Get-Job
-
-    # Start background job
-    $job = start-job {get-process}
-
-    # Wait for the job to complete
-    Wait-Job -Job $job
-
-    # View job state
-    $job.state
-
-    # Get the results of the job
-    $resp = Receive-Job -Job $job
-
-    # Remove the job from the session
-    Remove-Job -Job $job
-
-    $resp
-#>
-
-        
