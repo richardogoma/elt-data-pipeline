@@ -49,7 +49,6 @@ function Import-CsvToSqlTable {
                 [string]$TableName
             )
             
-            $sql += ("CREATE TABLE [$TableName]($($CleanHeader[0]) {0} `n" -f 'INT PRIMARY KEY')
             $CleanHeader[1..$CleanHeader.Length] | ForEach-Object {$sql += ",$_ $SqlDataType `n"}
             $sql += ");"
             $sql = $sql -join "`n"
@@ -62,14 +61,17 @@ function Import-CsvToSqlTable {
         $StagingTableName = "temp_{0}" -f $TableName
         if(-not $Append){
             $tempsql = @("IF EXISTS (SELECT 1 FROM sys.tables WHERE name  = '$StagingTableName') DROP TABLE [$StagingTableName];")
+            $tempsql += ("CREATE TABLE [$StagingTableName]($($CleanHeader[0]) $SqlDataType `n")
         } else {
              $tempsql = @("IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name  = '$StagingTableName')")
+             $tempsql += ("CREATE TABLE [$StagingTableName]($($CleanHeader[0]) $SqlDataType `n")
         }
         $tempsql = BuildSQL -sql $tempsql -CleanHeader $CleanHeader -SqlDataType $SqlDataType -TableName $StagingTableName
 
         # Build create table statement if integration table does not exist
         $IntegrationTableName = $TableName
         $prodsql = @("IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name  = '$IntegrationTableName')")
+        $prodsql += ("CREATE TABLE [$IntegrationTableName]($($CleanHeader[0]) {0} `n" -f 'INT PRIMARY KEY')
         $prodsql = BuildSQL -sql $prodsql -CleanHeader $CleanHeader -SqlDataType $SqlDataType -TableName $IntegrationTableName
         
         # Executing create table statements and loading data into staging area
