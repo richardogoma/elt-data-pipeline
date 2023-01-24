@@ -4,10 +4,10 @@ Param(
     ,[string]$SourceFile = '.\20230123-115724-8304473-requests-1.csv'
     ,[string]$SqlDataType = 'VARCHAR(MAX)'
     ,[string]$TableName = 'tblNLNGITRequests'
+    ,[string]$PrimaryKey = 'ID'
 )
 
 # ==========================
-Set-Variable -Name 'PrimaryKey' -Value 'ID'
 # Set-Location -Path 'D:\NLNG\Work\webapis\4Me_Batch_Program\ELT_development'
 
 try {
