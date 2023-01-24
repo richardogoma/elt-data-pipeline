@@ -1,14 +1,18 @@
 Param(
     [string]$InstanceName = 'localhost'
     ,[string]$Database = 'NLNGProjects'
-    ,[string]$SourceFile = '.\20230123-115724-8304473-requests-1.csv'
+    ,[string]$SourceFile = '.\20230124-190224-8308822-workflows-1.csv'
     ,[string]$SqlDataType = 'VARCHAR(MAX)'
-    ,[string]$TableName = 'tblNLNGITRequests'
+    ,[string]$TableName = 'tblNLNGITWorkflows'
+    ,[string]$cwd
     ,[string]$PrimaryKey = 'ID'
 )
 
 # ==========================
-# Set-Location -Path 'D:\NLNG\Work\webapis\4Me_Batch_Program\ELT_development'
+if ($cwd.Length -ne 0) {
+    Set-Location -Path "$cwd\ELT_development"
+}
+# ==========================
 
 try {
     # Start background job to load data into the staging area
