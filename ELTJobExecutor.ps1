@@ -1,11 +1,11 @@
 Param(
-    [string]$InstanceName = 'localhost'
-    ,[string]$Database = 'NLNGProjects'
-    ,[string]$SourceFile = '.\20230124-190224-8308822-workflows-1.csv'
+    [string]$InstanceName = 'Your-Database-Instance'
+    ,[string]$Database = 'Your-Database'
+    ,[string]$SourceFile = '.\The-FilePath-To-Your.csv'
     ,[string]$SqlDataType = 'VARCHAR(MAX)'
-    ,[string]$TableName = 'tblNLNGITWorkflows'
+    ,[string]$TableName = 'Your-Database-Table-Name'
     ,[string]$cwd
-    ,[string]$PrimaryKey = 'ID'
+    ,[string]$PrimaryKey = 'Your-Database-Table-Primary-Key'
 )
 
 # ==========================
