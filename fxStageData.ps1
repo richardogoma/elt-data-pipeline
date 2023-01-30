@@ -97,10 +97,9 @@ function Import-CsvToSqlTable {
             } else {
                 $rowcount = Invoke-Sqlcmd -ServerInstance $InstanceName -Database $Database -Query "SELECT COUNT(1) [RowCount] FROM [$StagingTableName];"
             }
-            $output = New-Object PSObject -Property @{'Instance'=$InstanceName;'Database'=$Database;'Table'="$StagingTableName";'RowCount'=$rowcount.RowCount}
+            $output = New-Object PSObject -Property @{'Instance'=$InstanceName;'Database'=$Database;'Table'="$StagingTableName";'RowCount'=$rowcount.RowCount;'Timestamp'=Get-Date}
 
             Write-Output "Loading source data into the staging area" >> ProgramLog.log
-            Get-Date >> ProgramLog.log
             return $output >> ProgramLog.log
             
         }
