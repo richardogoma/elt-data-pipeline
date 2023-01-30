@@ -38,6 +38,7 @@ function IntegrateData {
         $output = New-Object PSObject -Property @{'Instance'=$InstanceName;'Database'=$Database;'Table'="[dbo].[$TableName]";'NewRowsCount'=$rowcount.NewRowsCount}
         
         Write-Output "Loading new data into the integration table" >> ProgramLog.log
+        Get-Date >> ProgramLog.log
         return $output >> ProgramLog.log
     }
     catch {

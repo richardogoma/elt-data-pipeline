@@ -100,6 +100,7 @@ function Import-CsvToSqlTable {
             $output = New-Object PSObject -Property @{'Instance'=$InstanceName;'Database'=$Database;'Table'="$StagingTableName";'RowCount'=$rowcount.RowCount}
 
             Write-Output "Loading source data into the staging area" >> ProgramLog.log
+            Get-Date >> ProgramLog.log
             return $output >> ProgramLog.log
             
         }
