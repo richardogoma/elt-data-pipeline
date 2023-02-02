@@ -99,9 +99,9 @@ function Import-CsvToSqlTable {
             }
             $output = New-Object PSObject -Property @{'Instance'=$InstanceName;'Database'=$Database;'Table'="$StagingTableName";'RowCount'=$rowcount.RowCount;'Timestamp'=Get-Date}
 
-            Write-Output "Loading source data into the staging area" >> ProgramLog.log
-            return $output >> ProgramLog.log
-            
+            # Write to log file
+            . .\fxWriteLog.ps1
+            Write-Function -data $output -description "Loading source data into the staging area" -file "ProgramLog.log"
         }
         catch{
             throw $Error[0]; $Error.Clear()
