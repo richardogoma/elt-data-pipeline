@@ -36,9 +36,10 @@ function IntegrateData {
             $rowcount = Invoke-Sqlcmd @Params
         }
         $output = New-Object PSObject -Property @{'Instance'=$InstanceName;'Database'=$Database;'Table'="[dbo].[$TableName]";'NewRowsCount'=$rowcount.NewRowsCount;'Timestamp'=Get-Date}
-        
-        Write-Output "Loading new data into the integration table" >> ProgramLog.log
-        return $output >> ProgramLog.log
+
+        # Write to log file
+        . .\fxWriteLog.ps1
+        Write-Function -data $output -description "Loading new data into the integration table" -file "ProgramLog.log"
     }
     catch {
         throw $Error[0]; $Error.Clear()
